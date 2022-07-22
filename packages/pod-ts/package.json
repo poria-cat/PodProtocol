@@ -1,0 +1,22 @@
+{
+  "name": "@pod/ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "asbuild": "asc assembly/index.ts --target release",
+    "test": "node tests"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@assemblyscript/loader": "^0.19.10",
+    "@pod/runtime": "^1.0.0",
+    "assemblyscript": "^0.19.10"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.19.10"
+  }
+}
