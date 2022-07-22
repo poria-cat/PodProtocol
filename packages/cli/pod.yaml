@@ -1,0 +1,13 @@
+specVersion: 0.0.1
+pod:
+  - contaoner: WriteSomething
+    file: ./src/WriteSomething.js
+    handles:
+      - handler: writeOne()
+        acl: bala
+  - name: HelloWorld
+    file: ./src/HelloWorld.js
+    handlers:
+      - handler: sayHello
+      - handler: sayWorld
+        acl: balabla
