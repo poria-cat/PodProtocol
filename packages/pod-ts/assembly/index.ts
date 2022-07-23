@@ -10,10 +10,6 @@ export enum ValueKind {
   INT = 1,
 }
 
-export class KeyValue {
-  constructor(public key: string, public value: Value) {}
-}
-
 export class Value {
   constructor(public kind: ValueKind, public data: ArrayBuffer) {}
 
@@ -35,6 +31,77 @@ export class Value {
   }
 }
 
+export class KeyValue {
+  constructor(public key: string, public value: Value) {}
+}
+
+export class StringMap {
+  entries: Array<KeyValue>;
+
+  constructor() {
+    this.entries = new Array<KeyValue>(0);
+  }
+
+  getEntry(key: string): KeyValue | null {
+    for (let i = 0; i < this.entries.length; i++) {
+      if (this.entries[i].key == key) {
+        return this.entries[i];
+      }
+    }
+    return null;
+  }
+
+  set(key: string, value: Value): void {
+    let entry = this.getEntry(key);
+    if (entry) {
+      entry.value = value;
+    } else {
+      this.entries.push(new KeyValue(key, value));
+    }
+  }
+
+  get(key: string): Value | null {
+    let entry = this.getEntry(key);
+    return entry ? entry.value : null;
+  }
+}
+
 export function testInput(p: Value): string {
   return p.toString();
+}
+
+declare namespace console {
+  // @external("env", "console.log")
+  function log(n: string): void;
+}
+
+declare namespace store {
+  function set(entityName: string, id: string, data: Array<KeyValue>): void;
+  function get(entityName: string, id: string) : Array<KeyValue>
+}
+
+export function testConsole():void{
+  console.log("hello console")
+}
+
+export function exportStore() :void {
+  let s = new Array<KeyValue>(0)
+  let v = new Value(ValueKind.STRING, stringToArrayBuffer("hello"))
+  let kv = new KeyValue("testKey", v);
+  s.push(kv)
+  store.set("TestEntity", "test-id", s)
+
+  let record = new StringMap()
+  record.set("qaq", new Value(ValueKind.INT, i32ToArrayBuffer(12121)))
+  store.set("Test", "id_0", record.entries)
+}
+
+export function testInputKV() :void {
+  let v0 = store.get("Test", "id_0");
+  let v1 = store.get("Test", "id_2");
+
+  let record = new StringMap()
+  record.entries = v0
+  
+  console.log(`${v0.length}, ${v1.length}`)
 }

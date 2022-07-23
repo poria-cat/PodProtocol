@@ -143,7 +143,7 @@ export class BindHelper {
       key: this.liftString(
         new Uint32Array(this.memory.buffer)[(pointer + 0) >>> 2]
       ),
-      value: this.liftKeyValue(
+      value: this.liftValue(
         new Uint32Array(this.memory.buffer)[(pointer + 4) >>> 2]
       ),
     };
@@ -159,5 +159,15 @@ export class BindHelper {
       this.lowerValue(value.value) || this.__notnull();
     this.exports.__unpin(pointer);
     return pointer;
+  }
+  liftKeyValueArray(value) {
+    return this.liftArray(
+      (pointer) =>
+        this.liftKeyValue(
+          new Uint32Array(this.memory.buffer)[pointer >>> 2]
+        ),
+      2,
+      value >>> 0
+    );
   }
 }
