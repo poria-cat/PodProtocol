@@ -2,6 +2,7 @@ import boom from "boom";
 import YAML from "yaml";
 import all from "it-all";
 import { BindHelper, wasmRuntime } from "@pod/runtime";
+import {CID} from "ipfs-core"
 import { ipfsClient, getIpfsCID } from "./ipfs.js";
 import { concat as uint8ArrayConcat } from "uint8arrays/concat";
 
@@ -9,6 +10,8 @@ import { concat as uint8ArrayConcat } from "uint8arrays/concat";
 const pods = {};
 const store = {};
 const snapshot = {};
+// {podId: cid}
+const lastCid = {};
 
 export const getRoutesAndIpfs = async () => {
   const client = await ipfsClient();
@@ -22,9 +25,6 @@ export const getRoutesAndIpfs = async () => {
       }
 
       const content = uint8ArrayConcat(await all(client.cat(cid)));
-      console.log("content buffer", content.buffer);
-
-      console.log({ content });
       const podConfig = Buffer.from(content).toString();
       // console.log(YAML.parse(podConfig))
       const parsedConfig = YAML.parse(podConfig);
@@ -51,10 +51,12 @@ export const getRoutesAndIpfs = async () => {
         }
       }
 
+      lastCid[cid] = cid;
+
       return `pod ${cid} deployed success!`;
       // return "success";
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       throw boom.boomify(err);
     }
   };
@@ -79,8 +81,6 @@ export const getRoutesAndIpfs = async () => {
 
     const config = pod.config;
 
-    console.log(config);
-
     const findContainer = config.pod.filter((c) => {
       return c.container === container;
     });
@@ -91,14 +91,9 @@ export const getRoutesAndIpfs = async () => {
       );
     }
 
-    console.log(findContainer[0]);
-
     const handlers = findContainer[0].handlers;
 
-    console.log({ handlers });
-
     const findMethod = handlers.filter((handler) => {
-      console.log({ handler });
       return handler.handler.method === method;
     });
 
@@ -108,7 +103,6 @@ export const getRoutesAndIpfs = async () => {
 
     const handler = findMethod[0];
     const paramsConfig = handler.handler.params;
-    console.log(paramsConfig);
 
     const input = [];
 
@@ -167,8 +161,33 @@ export const getRoutesAndIpfs = async () => {
       throw boom.boomify(error);
     }
 
-    return "success";
+    const log = JSON.stringify({ container, method, params });
+    const prev = lastCid[podId];
+    const logCid = await client.dag.put({ log, prev });
+
+    lastCid[podId] = logCid.toString();
+
+    return { status: "success", prev, logCid: lastCid[podId] };
   };
+
+  const getLastCid = async (req, res) => {
+    try {
+      const podId = req.params.podId;
+      return { lastCid: lastCid[podId] };
+    } catch (err) {
+      throw boom.boomify(err);
+    }
+  };
+
+  const checkLog = async (req, res) => {
+    try {
+      const cid = req.params.cid;
+      const result = await client.dag.get(CID.parse(cid))
+      return result
+    } catch (err) {
+      throw boom.boomify(err);
+    }
+  }
   const routes = [
     {
       method: "POST",
@@ -180,6 +199,16 @@ export const getRoutesAndIpfs = async () => {
       url: "/call",
       handler: call,
     },
+    {
+      method: "GET",
+      url: "/lastCid/:podId",
+      handler: getLastCid,
+    },
+    {
+      method: "GET",
+      url: "/checkLog/:cid",
+      handler: checkLog
+    }
   ];
   return { routes, ipfsClient: client };
 };
