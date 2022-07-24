@@ -18,7 +18,7 @@ Example.
 2. Go to packages/example
 3. Freely modify src/hello.ts
 4. Run deploy.js, get the pod id (pod file cid)
-[deploy image](https://github.com/poria-cat/PodProtocol/blob/main/assets/pod_deploy.png)
+![deploy image](https://github.com/poria-cat/PodProtocol/blob/main/assets/pod_deploy.png)
 5. Go to packages/node and run app.js
 6. Use HTTP API: 
 ```
@@ -29,7 +29,7 @@ POST localhost:3000/create
 ```
 If it goes well, you will get a return like this
 
-[create image](https://github.com/poria-cat/PodProtocol/blob/main/assets/pod_create.png)
+![create image](https://github.com/poria-cat/PodProtocol/blob/main/assets/pod_create.png)
 
 7. Call Method
 
@@ -46,7 +46,7 @@ POST localhost:3000/call
 
 If it goes well, this is what you get back (data stored to Store, logs stored to IPLD)
 
-[pod_call](https://github.com/poria-cat/PodProtocol/blob/main/assets/pod_call.png)
+![pod_call](https://github.com/poria-cat/PodProtocol/blob/main/assets/pod_call.png)
 
 8. Get Data
 
@@ -57,4 +57,4 @@ GET http://localhost:3000/getStore/:podId
 
 If things go well, all the data in the Store will be available, and GraphQL queries will be added in the future to make it easier to query the data.
 
-[pod_query](https://github.com/poria-cat/PodProtocol/blob/main/assets/pod_query.png)
+![pod_query](https://github.com/poria-cat/PodProtocol/blob/main/assets/pod_query.png)
