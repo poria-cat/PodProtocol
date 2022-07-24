@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@pod/cli": "^1.0.0",
     "@pod/ts": "^1.0.0"
   }
 }
