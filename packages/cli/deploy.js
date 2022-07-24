@@ -2,10 +2,25 @@ import YAML from "yaml";
 import fs from "fs";
 import * as IPFS from "ipfs-core";
 import chalk from "chalk";
+import all from "it-all";
+import { build } from "./build.js";
+
+function getIpfsCID(uri) {
+  if (uri.startsWith("ipfs://")) {
+    return uri.remove("ipfs://");
+  }
+  return uri;
+}
 
 export async function deploy(podPath) {
+  build(podPath);
+
   console.log(chalk.green("starting ipfs"));
-  const ipfs = await IPFS.create();
+  const ipfs = await IPFS.create({
+    host: "ipfs.infura.io",
+    port: 5001,
+    protocol: "https",
+  });
   console.log(chalk.green("ipfs started"));
 
   const file = fs.readFileSync(podPath, "utf8");
@@ -23,6 +38,8 @@ export async function deploy(podPath) {
     result.pod[index].file = `ipfs://${cid.toString()}`;
   }
 
-//   console.log(JSON.stringify(result, null, 2));
-console.log(YAML.stringify(result))
+  const { cid } = await ipfs.add(YAML.stringify(result));
+  console.log("pod file cid:", chalk.green(cid.toString()));
+  //   const content = await all(ipfs.cat(getIpfsCID(cid.toString())))
+  //   console.log(Buffer.from(content[0]).toString())
 }
