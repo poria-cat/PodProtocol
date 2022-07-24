@@ -2,7 +2,7 @@
   "name": "@pod/ts",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "assembly/index.ts",
   "scripts": {
     "asbuild": "asc assembly/index.ts --target release",
     "test": "node tests"

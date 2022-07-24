@@ -152,5 +152,7 @@ const imports = {
     "console.log": (n) => console.log(__liftString(n)),
   },
 };
-const wasmBuffer = fs.readFileSync(__dirname + "/build/optimized.wasm");
+// const wasmBuffer = fs.readFileSync(__dirname + "/build/optimized.wasm");
+const wasmBuffer = fs.readFileSync(__dirname + "/myModule.wasm");
+
 const wasmInstance = loadWasm(wasmBuffer, imports);

@@ -1,0 +1,10 @@
+specVersion: 0.0.1
+pod:
+  - container: Hello
+    file: ./src/hello.ts
+    handlers:
+      - handler:
+          method: sayHello
+      - handler:
+          method: storeWhat
+          params: [{ "type": "string", "name": "what" }]
