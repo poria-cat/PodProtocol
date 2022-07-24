@@ -1,3 +1,6 @@
-import {build} from "@pod/cli"
+import {build, deploy} from "@pod/cli"
 
-build("./pod.yaml")
+// build("./pod.yaml")
+deploy("./pod.yaml").catch(e => {
+    console.log(e)
+})

@@ -10,12 +10,26 @@ pod:
     handlers:
       - handler:
           method: sayHello
-          params: [{"type": "string", "name": "x"}, {"type": "i32", "name": "n"}]
+          params:
+            - type: string
+              name: x
+            - type: i32
+              name: n
         access:
           chain: goerli
           contractAddress: 0x
           abi: function balanceOf(address owner) view returns (uint256)
-          condition: {"method": "balanceOf", "params": [":userAddress"], "compareResult": {"valueIndex": 0,"operator": ">","value": "10"}}
-      - handler: 
+          condition:
+            method: balanceOf
+            params:
+              - :userAddress
+              - "1"
+            compareResult:
+              valueIndex: 0
+              operator: ">"
+              value: "10"
+      - handler:
           method: sayWorld
-          params: [{"type": "string", "name": "whoSay"}]
+          params:
+            - type: string
+              name: whoSay

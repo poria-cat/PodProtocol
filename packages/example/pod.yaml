@@ -7,4 +7,6 @@ pod:
           method: sayHello
       - handler:
           method: storeWhat
-          params: [{ "type": "string", "name": "what" }]
+          params:
+            - type: string
+              name: what
