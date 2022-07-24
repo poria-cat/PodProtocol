@@ -170,6 +170,15 @@ export const getRoutesAndIpfs = async () => {
     return { status: "success", prev, logCid: lastCid[podId] };
   };
 
+  const getStore = async (req, res) => {
+    try {
+      const podId = req.params.podId;
+      return { store: store[podId] };
+    } catch (err) {
+      throw boom.boomify(err);
+    }
+  }
+
   const getLastCid = async (req, res) => {
     try {
       const podId = req.params.podId;
@@ -208,6 +217,11 @@ export const getRoutesAndIpfs = async () => {
       method: "GET",
       url: "/checkLog/:cid",
       handler: checkLog
+    },
+    {
+      method: "GET",
+      url: "/getStore/:podId",
+      handler: getStore
     }
   ];
   return { routes, ipfsClient: client };
