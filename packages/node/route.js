@@ -81,9 +81,9 @@ export const getRoutesAndIpfs = async () => {
 
     console.log(config);
 
-    const findContainer = config.pod.filter(c => {
-      return c.container === container
-    })
+    const findContainer = config.pod.filter((c) => {
+      return c.container === container;
+    });
 
     if (findContainer.length === 0) {
       throw boom.boomify(
@@ -95,10 +95,10 @@ export const getRoutesAndIpfs = async () => {
 
     const handlers = findContainer[0].handlers;
 
-    console.log({handlers})
+    console.log({ handlers });
 
     const findMethod = handlers.filter((handler) => {
-      console.log({handler})
+      console.log({ handler });
       return handler.handler.method === method;
     });
 
@@ -149,29 +149,23 @@ export const getRoutesAndIpfs = async () => {
       });
     }
 
-    // console.log({input})
-
-    // console.log({ podId, container, method, params });
-
-    pods[podId].containerRuntimes[container].exports[method](...input);
-
-
-    // snapshot {
-    //   "QmXv15dEXvRuwe9WNmmS1gruTEMm8TAEwZ61XFnPVjz96T": [
-    //     {
-    //       "entity": "Test",
-    //       "id": "id_12",
-    //       "data": null
-    //     },
-    //     {
-    //       "entity": "Test",
-    //       "id": "id_12",
-    //       "data": {
-    //         "say": "just hello!"
-    //       }
-    //     }
-    //   ]
-    // }
+    try {
+      pods[podId].containerRuntimes[container].exports[method](...input);
+    } catch (error) {
+      // revert
+      if (snapshot[podId]) {
+        snapshot[podId].forEach((snapshotItem) => {
+          const { entity, id, data } = snapshotItem;
+          if (!data) {
+            delete store[podId][entity][id];
+          } else {
+            store[podId][entity][id] = data;
+          }
+        });
+      }
+      snapshot = {};
+      throw boom.boomify(error);
+    }
 
     return "success";
   };
