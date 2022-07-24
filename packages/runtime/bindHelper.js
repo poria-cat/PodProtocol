@@ -163,11 +163,22 @@ export class BindHelper {
   liftKeyValueArray(value) {
     return this.liftArray(
       (pointer) =>
-        this.liftKeyValue(
-          new Uint32Array(this.memory.buffer)[pointer >>> 2]
-        ),
+        this.liftKeyValue(new Uint32Array(this.memory.buffer)[pointer >>> 2]),
       2,
       value >>> 0
+    );
+  }
+  lowerKeyValueArray(kvArray) {
+    return (
+      this.lowerArray(
+        (pointer, value) => {
+          new Uint32Array(this.memory.buffer)[pointer >>> 2] =
+            this.lowerKeyValue(value) || this.notnull();
+        },
+        9,
+        2,
+        kvArray
+      ) || this.notnull()
     );
   }
 }

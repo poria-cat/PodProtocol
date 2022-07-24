@@ -124,7 +124,8 @@ function loadWasm(wasmBuffer, imports) {
         let pod_id = "0";
         let obj = store[pod_id][entityName][id]
         let kvArray = objToKVArray(obj)
-        kvArray = bind.lowerArray((pointer, value) => {new Uint32Array(wasmModule.exports.memory.buffer)[pointer >>> 2] = bind.lowerKeyValue(value) || bind.notnull();}, 9, 2, kvArray) || bind.notnull()
+        // kvArray = bind.lowerArray((pointer, value) => {new Uint32Array(wasmModule.exports.memory.buffer)[pointer >>> 2] = bind.lowerKeyValue(value) || bind.notnull();}, 9, 2, kvArray) || bind.notnull()
+        kvArray = bind.lowerKeyValueArray(kvArray)
         return kvArray
         // kvP = __lowerArray((pointer, value) => { new Uint32Array(memory.buffer)[pointer >>> 2] = __lowerRecord8(value) || __notnull(); }, 9, 2, kvP) || __notnull();
       // exports.inputKv(kvP);
