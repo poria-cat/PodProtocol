@@ -76,6 +76,9 @@ function loadWasm(wasmBuffer, imports) {
       "console.log": (n) => console.log(bind.liftString(n)),
       "store.set": (entityName, id, kvArray) => {
         entityName = bind.liftString(entityName);
+        if (entityName === "Test") {
+          throw "Test not defined"
+        }
         id = bind.liftString(id);
         kvArray = bind.liftKeyValueArray(kvArray);
         // console.log("in store.set:", {
@@ -152,7 +155,11 @@ const imports = {
     "console.log": (n) => console.log(__liftString(n)),
   },
 };
-// const wasmBuffer = fs.readFileSync(__dirname + "/build/optimized.wasm");
-const wasmBuffer = fs.readFileSync(__dirname + "/myModule.wasm");
+const wasmBuffer = fs.readFileSync(__dirname + "/build/optimized.wasm");
+// const wasmBuffer = fs.readFileSync(__dirname + "/myModule.wasm");
 
-const wasmInstance = loadWasm(wasmBuffer, imports);
+try {
+  const wasmInstance = loadWasm(wasmBuffer, imports);
+} catch (error) {
+  console.log({error})
+}

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@fastify/autoload": "^5.1.0",
+    "@pod/cli": "^1.0.0",
     "@pod/runtime": "^1.0.0",
     "boom": "^7.3.0",
     "fastify": "^4.0.0",

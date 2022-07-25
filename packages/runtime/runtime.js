@@ -1,8 +1,5 @@
 import { BindHelper } from "./bindHelper.js";
-import {
-  kvArrayToObj,
-  objToKVArray,
-} from "./convertHelper.js";
+import { kvArrayToObj, objToKVArray } from "./convertHelper.js";
 
 import { instantiateSync } from "@assemblyscript/loader";
 
@@ -23,12 +20,24 @@ import { instantiateSync } from "@assemblyscript/loader";
 // };
 
 // need pass pod id, store, snapshot
-export function wasmRuntime(wasmBuffer, podId, store = {}, snapshot = {}) {
+export function wasmRuntime(
+  wasmBuffer,
+  podId,
+  schema = {},
+  store = {},
+  snapshot = {}
+) {
+  let entities = Object.keys(schema);
+
   const wasmModule = instantiateSync(wasmBuffer, {
     index: {
       "console.log": (n) => console.log(bind.liftString(n)),
       "store.set": (entityName, id, kvArray) => {
         entityName = bind.liftString(entityName);
+        if (!entities.includes(entityName)) {
+          throw new Error(`entity ${entityName} not definded`);
+          // console.log("`${entityName} not definded`")
+        }
         id = bind.liftString(id);
         kvArray = bind.liftKeyValueArray(kvArray);
         // console.log("in store.set:", {

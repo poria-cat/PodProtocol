@@ -2,6 +2,7 @@ import boom from "boom";
 import YAML from "yaml";
 import all from "it-all";
 import { BindHelper, wasmRuntime } from "@pod/runtime";
+import {parseSchema, checkId} from "@pod/cli"
 import {CID} from "ipfs-core"
 import { ipfsClient, getIpfsCID } from "./ipfs.js";
 import { concat as uint8ArrayConcat } from "uint8arrays/concat";
@@ -9,7 +10,7 @@ import { concat as uint8ArrayConcat } from "uint8arrays/concat";
 // {"podId": {config: {}, containerRuntimes: { "Hello": {memory, exports, bindHelper}}}}
 const pods = {};
 const store = {};
-const snapshot = {};
+let snapshot = {};
 // {podId: cid}
 const lastCid = {};
 
@@ -21,7 +22,7 @@ export const getRoutesAndIpfs = async () => {
     try {
       const cid = req.body.cid;
       if (!cid) {
-        throw "can't get pod cid";
+        throw boom.boomify(new Error("can't get pod cid"));
       }
 
       const content = uint8ArrayConcat(await all(client.cat(cid)));
@@ -29,6 +30,17 @@ export const getRoutesAndIpfs = async () => {
       // console.log(YAML.parse(podConfig))
       const parsedConfig = YAML.parse(podConfig);
       let runtimes = {};
+      let schema = parsedConfig.schema
+      console.log(schema, parsedConfig)
+      if (!schema) {
+        throw boom.boomify(new Error("no schema file"))
+      }
+      const schemaBuffer = uint8ArrayConcat(
+        await all(client.cat(getIpfsCID(schema)))
+      );
+      schema = Buffer.from(schemaBuffer).toString()
+      let parsedSchema  = parseSchema(schema)
+      checkId(parsedSchema)
       if (parsedConfig.pod?.length > 0) {
         for (let index = 0; index < parsedConfig.pod.length; index++) {
           const container = parsedConfig.pod[index];
@@ -41,6 +53,7 @@ export const getRoutesAndIpfs = async () => {
           runtimes[name] = wasmRuntime(
             Buffer.from(wasmBuffer.buffer),
             cid,
+            parseSchema,
             store,
             snapshot
           );
@@ -145,7 +158,7 @@ export const getRoutesAndIpfs = async () => {
 
     try {
       pods[podId].containerRuntimes[container].exports[method](...input);
-    } catch (error) {
+    } catch (runtimeError) {
       // revert
       if (snapshot[podId]) {
         snapshot[podId].forEach((snapshotItem) => {
@@ -158,7 +171,7 @@ export const getRoutesAndIpfs = async () => {
         });
       }
       snapshot = {};
-      throw boom.boomify(error);
+      throw boom.boomify(runtimeError);
     }
 
     const log = JSON.stringify({ container, method, params });

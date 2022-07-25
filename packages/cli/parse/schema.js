@@ -102,3 +102,16 @@ export function parseSchema(schema) {
   });
   return models;
 }
+
+export function checkId(parsedSchema) {
+  for (const entityName in parsedSchema) {
+    const entity = parsedSchema[entityName];
+    let id = entity.id;
+    if (!id) {
+      throw `expect ${entityName} have id attribute, but can't find it`;
+    }
+    if (id.allowNull) {
+      throw `id can't be empty, but ${entityName}'s id allow null`;
+    }
+  }
+}
