@@ -15,6 +15,11 @@ export async function deploy(podPath) {
   const file = fs.readFileSync(podPath, "utf8");
   const result = YAML.parse(file);
 
+  const schemaFile = result.schema;
+
+  const { cid: schemaCid } = await ipfs.add(fs.readFileSync(schemaFile));
+  result.schema = `ipfs://${schemaCid.toString()}`;
+
   let containers = result.pod;
 
   for (let index = 0; index < containers.length; index++) {
@@ -30,7 +35,7 @@ export async function deploy(podPath) {
   const { cid } = await ipfs.add(YAML.stringify(result));
   console.log("pod file cid:", chalk.green(cid.toString()));
 
-//   const content = await all(ipfs.cat(getIpfsCID(cid.toString())));
-//   console.log(Buffer.from(content[0]).toString());
+  // const content = await all(ipfs.cat(cid.toString()));
+  // console.log(Buffer.from(content[0]).toString());
   process.exit(1);
 }

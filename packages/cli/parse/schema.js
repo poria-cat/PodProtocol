@@ -1,10 +1,9 @@
 import { parse } from "graphql";
 
-
-const getValueName = (name) => {
+function getValueName(name) {
   return { kind: name.kind, value: name.value };
-};
-const getDefaultValue = (directives) => {
+}
+function getDefaultValue(directives) {
   // return {haveDefaultValue, value}
 
   let haveDefaultValue = false;
@@ -47,9 +46,9 @@ const getDefaultValue = (directives) => {
 
   haveDefaultValue = true;
   return { haveDefaultValue, value: valueValue };
-};
+}
 
-function parseSchema(schema) {
+export function parseSchema(schema) {
   const parsed = parse(schema);
   const models = {};
   parsed.definitions.forEach((definition) => {
@@ -103,19 +102,3 @@ function parseSchema(schema) {
   });
   return models;
 }
-
-const parsed = parseSchema(`
-type Book {
-    title: String @default(value: "hello world")
-    id: ID!
-  }
-
-  type Article {
-    id: String!
-  }
-  
-  type ContractRecord {
-    id: ID!
-    contractAddress: String!
-  }
-  `)

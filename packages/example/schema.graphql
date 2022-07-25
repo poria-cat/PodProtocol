@@ -1,0 +1,13 @@
+type Book {
+  title: String @default(value: "hello world")
+  id: ID!
+}
+
+type Article {
+  id: String!
+}
+
+type ContractRecord {
+  id: ID!
+  contractAddress: String!
+}
