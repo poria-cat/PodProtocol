@@ -2,8 +2,8 @@ import boom from "boom";
 import YAML from "yaml";
 import all from "it-all";
 import { BindHelper, wasmRuntime } from "@pod/runtime";
-import {parseSchema, checkId} from "@pod/cli"
-import {CID} from "ipfs-core"
+import { parseSchema, checkId } from "@pod/cli";
+import { CID } from "ipfs-core";
 import { ipfsClient, getIpfsCID } from "./ipfs.js";
 import { concat as uint8ArrayConcat } from "uint8arrays/concat";
 
@@ -30,17 +30,17 @@ export const getRoutesAndIpfs = async () => {
       // console.log(YAML.parse(podConfig))
       const parsedConfig = YAML.parse(podConfig);
       let runtimes = {};
-      let schema = parsedConfig.schema
-      console.log(schema, parsedConfig)
+      let schema = parsedConfig.schema;
+      console.log(schema, parsedConfig);
       if (!schema) {
-        throw boom.boomify(new Error("no schema file"))
+        throw boom.boomify(new Error("no schema file"));
       }
       const schemaBuffer = uint8ArrayConcat(
         await all(client.cat(getIpfsCID(schema)))
       );
-      schema = Buffer.from(schemaBuffer).toString()
-      let parsedSchema  = parseSchema(schema)
-      checkId(parsedSchema)
+      schema = Buffer.from(schemaBuffer).toString();
+      let parsedSchema = parseSchema(schema);
+      checkId(parsedSchema);
       if (parsedConfig.pod?.length > 0) {
         for (let index = 0; index < parsedConfig.pod.length; index++) {
           const container = parsedConfig.pod[index];
@@ -53,7 +53,7 @@ export const getRoutesAndIpfs = async () => {
           runtimes[name] = wasmRuntime(
             Buffer.from(wasmBuffer.buffer),
             cid,
-            parseSchema,
+            parsedSchema,
             store,
             snapshot
           );
@@ -170,8 +170,9 @@ export const getRoutesAndIpfs = async () => {
           }
         });
       }
-      snapshot = {};
       throw boom.boomify(runtimeError);
+    } finally {
+      snapshot = {};
     }
 
     const log = JSON.stringify({ container, method, params });
@@ -190,7 +191,7 @@ export const getRoutesAndIpfs = async () => {
     } catch (err) {
       throw boom.boomify(err);
     }
-  }
+  };
 
   const getLastCid = async (req, res) => {
     try {
@@ -204,12 +205,12 @@ export const getRoutesAndIpfs = async () => {
   const checkLog = async (req, res) => {
     try {
       const cid = req.params.cid;
-      const result = await client.dag.get(CID.parse(cid))
-      return result
+      const result = await client.dag.get(CID.parse(cid));
+      return result;
     } catch (err) {
       throw boom.boomify(err);
     }
-  }
+  };
   const routes = [
     {
       method: "POST",
@@ -229,13 +230,13 @@ export const getRoutesAndIpfs = async () => {
     {
       method: "GET",
       url: "/checkLog/:cid",
-      handler: checkLog
+      handler: checkLog,
     },
     {
       method: "GET",
       url: "/getStore/:podId",
-      handler: getStore
-    }
+      handler: getStore,
+    },
   ];
   return { routes, ipfsClient: client };
 };
