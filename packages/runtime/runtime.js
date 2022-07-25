@@ -1,5 +1,5 @@
 import { BindHelper } from "./bindHelper.js";
-import { kvArrayToObj, objToKVArray } from "./convertHelper.js";
+import { kvArrayToObj, objToKVArray, getValuesKind } from "./convertHelper.js";
 
 import { instantiateSync } from "@assemblyscript/loader";
 
@@ -19,6 +19,28 @@ import { instantiateSync } from "@assemblyscript/loader";
 //   // "0": [{entity: "Test", id: "id_1", data: {key: "test key"}}, {entity: "Test2", id: "id_0", data: null}]
 // };
 
+function haveDefaultValueKeys(entitySchema) {
+  let keys = [];
+  for (const key in entitySchema) {
+    const attribute = entitySchema[key];
+    if (attribute.defaultValue) {
+      keys.push(key);
+    }
+  }
+  return keys;
+}
+
+function keyNotAllowNull(entitySchema) {
+  let keys = [];
+  for (const key in entitySchema) {
+    const attribute = entitySchema[key];
+    if (attribute.allowNull === false && key !== "id") {
+      keys.push(key);
+    }
+  }
+  return keys;
+}
+
 // need pass pod id, store, snapshot
 export function wasmRuntime(
   wasmBuffer,
@@ -34,11 +56,19 @@ export function wasmRuntime(
       "console.log": (n) => console.log(bind.liftString(n)),
       "store.set": (entityName, id, kvArray) => {
         entityName = bind.liftString(entityName);
+        // console.log({ entities, entityName });
         if (!entities.includes(entityName)) {
           throw new Error(`entity ${entityName} not definded`);
           // console.log("`${entityName} not definded`")
         }
+
         id = bind.liftString(id);
+        if (!id || id === "") {
+          throw new Error(`id can't be empty in ${entityName}`);
+        }
+
+        const entityAttributes = Object.keys(schema[entityName]);
+
         kvArray = bind.liftKeyValueArray(kvArray);
         // console.log("in store.set:", {
         //   entityName,
@@ -46,6 +76,38 @@ export function wasmRuntime(
         //   data: kvArrayToObj(kvArray),
         // });
         let convertedValue = kvArrayToObj(kvArray);
+
+        const valuesKind = getValuesKind(kvArray);
+
+        // console.log({ valuesKind });
+
+        for (const key in convertedValue) {
+          if (!entityAttributes.includes(key)) {
+            throw new Error(
+              `${key} attribute not definded in Entity ${entityName}`
+            );
+          }
+          const attributeLimit = schema[entityName][key];
+          // console.log({ attributeLimit });
+          let type = attributeLimit.type;
+          if (type === "ID") {
+            type = "String";
+          }
+          let valueType = valuesKind[key];
+          let valueTypeToString;
+          if (valueType === 0) {
+            valueTypeToString = "String";
+          } else if (valueType === 1) {
+            valueTypeToString = "Int";
+          }
+          // console.log({ type, valueType });
+          if (valueTypeToString !== type) {
+            throw new Error(
+              `${key}'s type in Entity ${entityName} should be ${type}, but get ${valueTypeToString}`
+            );
+          }
+        }
+
         if (!store[podId]) {
           store[podId] = {};
         }
@@ -63,6 +125,23 @@ export function wasmRuntime(
         }
         let newEntityValue;
         if (!entityValue) {
+          // check not null, and set default value when first set
+          let notNullKeys = keyNotAllowNull(schema[entityName]);
+          let haveDefaultValue = haveDefaultValueKeys(schema[entityName]);
+
+          const nullKey = notNullKeys.filter((key) => !convertedValue[key]);
+
+          if (nullKey.length > 0) {
+            throw new Error(`${nullKey[0]} shouldn't be null `);
+          }
+
+          const needSetDefaultKeys = haveDefaultValue.filter(
+            (key) => !convertedValue[key]
+          );
+          needSetDefaultKeys.forEach((key) => {
+            convertedValue[key] = schema[entityName][key].defaultValue;
+          });
+
           snapshot[podId].push({ entity: entityName, id, data: null });
           newEntityValue = convertedValue;
         } else {

@@ -78,7 +78,7 @@ export function parseSchema(schema) {
             }
 
             if (typeKind === "Name") {
-              const allowTypes = ["String", "ID", "Int", "Float", "Boolean"];
+              const allowTypes = ["String", "ID", "Int"];
               if (!allowTypes.includes(typeValue)) {
                 throw `not support type ${typeValue} in entity ${modelName}`;
               }

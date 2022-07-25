@@ -37,6 +37,14 @@ export function kvArrayToObj(kvArray) {
   return obj;
 }
 
+export function getValuesKind(kvArray) {
+  let types = {}
+  kvArray.forEach(kv => {
+    types[kv.key] = kv.value.kind
+  })
+  return types
+}
+
 export function objToKVArray(obj) {
   if (!obj) {
     return [];

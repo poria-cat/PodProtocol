@@ -11,3 +11,11 @@ type ContractRecord {
   id: ID!
   contractAddress: String!
 }
+
+type Test {
+  id: ID!
+  key1: String!
+  key2: String
+  key3: String @default(value: "this is a test key")
+  say: String
+}
